@@ -1,0 +1,9 @@
+../LWIP/ethernetif.c:111:6:HAL_ETH_MspInit	2
+../LWIP/ethernetif.c:160:6:HAL_ETH_MspDeInit	2
+../LWIP/ethernetif.c:207:13:low_level_init	2
+../LWIP/ethernetif.c:314:14:low_level_output	6
+../LWIP/ethernetif.c:398:22:low_level_input	8
+../LWIP/ethernetif.c:486:6:ethernetif_input	3
+../LWIP/ethernetif.c:541:7:ethernetif_init	1
+../LWIP/ethernetif.c:588:7:sys_jiffies	1
+../LWIP/ethernetif.c:599:7:sys_now	1
