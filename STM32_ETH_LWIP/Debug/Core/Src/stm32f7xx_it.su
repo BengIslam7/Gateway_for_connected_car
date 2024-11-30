@@ -1,1 +1,2 @@
-../Core/Src/stm32f7xx_it.c:51:6:SysTick_Handler	8	static
+../Core/Src/stm32f7xx_it.c:52:6:SysTick_Handler	8	static
+../Core/Src/stm32f7xx_it.c:74:6:CAN1_RX0_IRQHandler	8	static

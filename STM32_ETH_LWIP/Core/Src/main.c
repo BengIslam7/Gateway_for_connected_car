@@ -49,6 +49,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f7xx_hal.h"
+#include "can.h"
 #include "lwip.h"
 #include "gpio.h"
 
@@ -72,6 +73,11 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+uint8_t RxData[8];
+uint8_t TxData[8];
+uint32_t TxMailbox;
+
 void Delay(volatile int number)
 {
 int j;
@@ -79,16 +85,52 @@ for(j = 0; j < number*4000; j++)
 {}
 }
 extern struct netif gnetif;
-
+/*UDP Block*/
 void udp_receive_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
 {   char buffer[100];
 	/* Copy the data from the pbuf */
 	strncpy (buffer, (char *)p->payload, p->len);
 	if(buffer[0]=='o'){
-		HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+		CanTxMsgTypeDef TxMessage;
+		hcan1.pTxMsg = &TxMessage;
+		hcan1.pTxMsg->StdId = 0x10; // Standard ID
+		hcan1.pTxMsg->IDE = CAN_ID_STD; // Standard frame
+		hcan1.pTxMsg->RTR = CAN_RTR_DATA; // Data frame
+		hcan1.pTxMsg->DLC = 1; // Data length
+		hcan1.pTxMsg->Data[0] = 1;
+
+		if (HAL_CAN_Transmit(&hcan1, 1000) == HAL_OK) { // 10ms Timeout
+		    // Transmission Error
+			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+									   Delay(1000);
+									   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+									   Delay(1000);
+									   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+									   Delay(1000);
+									   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+
+		}
+
 	}
 	else{
-		HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+		CanTxMsgTypeDef TxMessage;
+				hcan1.pTxMsg = &TxMessage;
+				hcan1.pTxMsg->StdId = 0x10; // Standard ID
+				hcan1.pTxMsg->IDE = CAN_ID_STD; // Standard frame
+				hcan1.pTxMsg->RTR = CAN_RTR_DATA; // Data frame
+				hcan1.pTxMsg->DLC = 1; // Data length
+				hcan1.pTxMsg->Data[0] = 0;
+
+				if (HAL_CAN_Transmit(&hcan1, 1000) == HAL_OK) { // 10ms Timeout
+				    // Transmission Error
+					HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+											   Delay(1000);
+											   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+											   Delay(1000);
+											   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+											   Delay(1000);
+											   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+				}
 	}
 	/* Free receive pbuf */
 	pbuf_free(p);
@@ -117,12 +159,17 @@ void udpServer_init(void)
 	   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
 	   Delay(1000);
 	   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+	   Delay(1000);
+	   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+	   Delay(1000);
+	   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
    }
    else
    {
 	   udp_remove(upcb);
    }
 }
+/*End of UDP Blockss*/
 
 /* USER CODE END 0 */
 
@@ -152,9 +199,11 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_LWIP_Init();
-
+  MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
-udpServer_init();
+  udpServer_init();
+  HAL_CAN_Receive_IT(&hcan1, CAN_FIFO0);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -227,7 +276,13 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef *hcan) {
+    if(hcan->pRxMsg->Data[0]!=1){
+    	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+    }
+    // Re-enable interrupt for the next message
 
+}
 /* USER CODE END 4 */
 
 /**
