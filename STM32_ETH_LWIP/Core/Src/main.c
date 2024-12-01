@@ -89,32 +89,18 @@ void udp_receive_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 	strncpy (buffer, (char *)p->payload, p->len);
 	CanTxMsgTypeDef TxMessage;
 	hcan1.pTxMsg = &TxMessage;
-	hcan1.pTxMsg->StdId = 0x10; // Standard ID
+	hcan1.pTxMsg->StdId = 0x10; // ssStandard ID
 	hcan1.pTxMsg->IDE = CAN_ID_STD; // Standard frame
 	hcan1.pTxMsg->RTR = CAN_RTR_DATA; // Data frame
 	hcan1.pTxMsg->DLC = 1; // Data length
 	if(buffer[0]=='o'){
-		hcan1.pTxMsg->Data[0] = 9;
-		if (HAL_CAN_Transmit(&hcan1,1000) == HAL_OK) { // 10ms Timeout
-			/*HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-			Delay(1000);
-			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
-			Delay(1000);
-			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-			Delay(1000);
-			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);*/
+		hcan1.pTxMsg->Data[0] = 1;
+		if (HAL_CAN_Transmit(&hcan1,1000) == HAL_OK) {
 		}
 	}
 	else{
 		hcan1.pTxMsg->Data[0] = 0;
-		if (HAL_CAN_Transmit(&hcan1, 1000) == HAL_OK) { // 10ms Timeout
-			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-			Delay(1000);
-			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
-			Delay(1000);
-			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-			Delay(1000);
-			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+		if (HAL_CAN_Transmit(&hcan1, 1000) == HAL_OK) {
 		}
 	}
 	/* Free receive pbuf */
@@ -262,12 +248,15 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef *hcan) {
-    //if(hcan->pRxMsg->Data[0]!=1){
+	if(hcan->pRxMsg->Data[0]==1){
 	//CanRxMsgTypeDef RxMessage;
 	//hcan->pRxMsg = &RxMessage;
     	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-    //}
-    // Re-enable interrupt for the next messagsse
+    }
+    if(hcan->pRxMsg->Data[0]==0){
+    	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+    }
+
 
 }
 /* USER CODE END 4 */
