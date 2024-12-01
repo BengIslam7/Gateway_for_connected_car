@@ -61,7 +61,6 @@ CAN_HandleTypeDef hcan1;
 /* CAN1 init function */
 void MX_CAN1_Init(void)
 {
-
   hcan1.Instance = CAN1;
   hcan1.Init.Prescaler = 16;
   hcan1.Init.Mode = CAN_MODE_LOOPBACK;
@@ -79,7 +78,8 @@ void MX_CAN1_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
   CAN_FilterConfTypeDef sFilterConfig;
-  sFilterConfig.BankNumber=16;
+  sFilterConfig.BankNumber=10;
+  sFilterConfig.FilterNumber=4;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
     sFilterConfig.FilterIdHigh = 0x10<< 5;

@@ -74,9 +74,6 @@ void SystemClock_Config(void);
 
 /* USER CODE BEGIN 0 */
 
-uint8_t RxData[8];
-uint8_t TxData[8];
-uint32_t TxMailbox;
 
 void Delay(volatile int number)
 {
@@ -90,47 +87,35 @@ void udp_receive_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 {   char buffer[100];
 	/* Copy the data from the pbuf */
 	strncpy (buffer, (char *)p->payload, p->len);
+	CanTxMsgTypeDef TxMessage;
+	hcan1.pTxMsg = &TxMessage;
+	hcan1.pTxMsg->StdId = 0x10; // Standard ID
+	hcan1.pTxMsg->IDE = CAN_ID_STD; // Standard frame
+	hcan1.pTxMsg->RTR = CAN_RTR_DATA; // Data frame
+	hcan1.pTxMsg->DLC = 1; // Data length
 	if(buffer[0]=='o'){
-		CanTxMsgTypeDef TxMessage;
-		hcan1.pTxMsg = &TxMessage;
-		hcan1.pTxMsg->StdId = 0x10; // Standard ID
-		hcan1.pTxMsg->IDE = CAN_ID_STD; // Standard frame
-		hcan1.pTxMsg->RTR = CAN_RTR_DATA; // Data frame
-		hcan1.pTxMsg->DLC = 1; // Data length
-		hcan1.pTxMsg->Data[0] = 1;
-
-		if (HAL_CAN_Transmit(&hcan1, 1000) == HAL_OK) { // 10ms Timeout
-		    // Transmission Error
+		hcan1.pTxMsg->Data[0] = 9;
+		if (HAL_CAN_Transmit(&hcan1,1000) == HAL_OK) { // 10ms Timeout
+			/*HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+			Delay(1000);
+			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+			Delay(1000);
 			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-									   Delay(1000);
-									   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
-									   Delay(1000);
-									   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-									   Delay(1000);
-									   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
-
+			Delay(1000);
+			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);*/
 		}
-
 	}
 	else{
-		CanTxMsgTypeDef TxMessage;
-				hcan1.pTxMsg = &TxMessage;
-				hcan1.pTxMsg->StdId = 0x10; // Standard ID
-				hcan1.pTxMsg->IDE = CAN_ID_STD; // Standard frame
-				hcan1.pTxMsg->RTR = CAN_RTR_DATA; // Data frame
-				hcan1.pTxMsg->DLC = 1; // Data length
-				hcan1.pTxMsg->Data[0] = 0;
-
-				if (HAL_CAN_Transmit(&hcan1, 1000) == HAL_OK) { // 10ms Timeout
-				    // Transmission Error
-					HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-											   Delay(1000);
-											   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
-											   Delay(1000);
-											   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-											   Delay(1000);
-											   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
-				}
+		hcan1.pTxMsg->Data[0] = 0;
+		if (HAL_CAN_Transmit(&hcan1, 1000) == HAL_OK) { // 10ms Timeout
+			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+			Delay(1000);
+			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+			Delay(1000);
+			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
+			Delay(1000);
+			HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_RESET);
+		}
 	}
 	/* Free receive pbuf */
 	pbuf_free(p);
@@ -277,10 +262,12 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef *hcan) {
-    if(hcan->pRxMsg->Data[0]!=1){
+    //if(hcan->pRxMsg->Data[0]!=1){
+	//CanRxMsgTypeDef RxMessage;
+	//hcan->pRxMsg = &RxMessage;
     	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, GPIO_PIN_SET);
-    }
-    // Re-enable interrupt for the next message
+    //}
+    // Re-enable interrupt for the next messagsse
 
 }
 /* USER CODE END 4 */

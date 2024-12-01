@@ -78,7 +78,8 @@ void CAN1_RX0_IRQHandler(void)
   /* USER CODE END CAN1_RX0_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan1);
   /* USER CODE BEGIN CAN1_RX0_IRQn 1 */
-
+  __HAL_UNLOCK(&hcan1);
+  HAL_CAN_Receive_IT(&hcan1, CAN_FIFO0);
   /* USER CODE END CAN1_RX0_IRQn 1 */
 }
 
